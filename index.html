@@ -2,146 +2,281 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kilo AI Playground</title>
 <style>
-  * { box-sizing: border-box; }
-  :root { --bg: #0f1115; --panel: #171a21; --line: #2a2e3a; --txt: #e8eaf0; --dim: #9aa3b2; --acc: #3b82f6; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--txt); margin: 0; display: flex; flex-direction: column; height: 100vh; }
-  header { padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  header h1 { font-size: 15px; margin: 0 6px 0 0; font-weight: 650; white-space: nowrap; }
-  header input, header select { font-size: 13px; border-radius: 8px; border: 1px solid var(--line); background: #1e222c; color: var(--txt); padding: 7px 9px; }
-  #baseUrl { flex: 1; min-width: 200px; }
-  #apiKey { width: 130px; }
-  #modelSel { max-width: 220px; }
-  button { font-size: 13px; border-radius: 8px; border: none; background: var(--acc); color: #fff; padding: 8px 14px; cursor: pointer; font-weight: 600; }
-  button:disabled { opacity: .5; cursor: default; }
-  button.ghost { background: #1e222c; border: 1px solid var(--line); }
-  #status { font-size: 12px; color: var(--dim); width: 100%; }
-  #chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 900px; width: 100%; margin: 0 auto; }
-  .msg { max-width: 88%; padding: 10px 14px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55; font-size: 14px; }
-  .user { align-self: flex-end; background: #2563eb; }
-  .bot { align-self: flex-start; background: #1e222c; border: 1px solid var(--line); }
-  .err { align-self: flex-start; background: #3a1d1d; border: 1px solid #7f2d2d; }
-  .meta { font-size: 11px; color: var(--dim); margin-top: 6px; }
-  .typing { color: var(--dim); font-style: italic; }
-  #composer { display: flex; gap: 8px; padding: 12px 14px; background: var(--panel); border-top: 1px solid var(--line); }
-  #composerWrap { display: flex; gap: 8px; max-width: 900px; width: 100%; margin: 0 auto; }
-  #composer textarea { flex: 1; resize: none; min-height: 44px; max-height: 150px; font-size: 14px; border-radius: 10px; border: 1px solid var(--line); background: #1e222c; color: var(--txt); padding: 10px 12px; font-family: inherit; }
-  #sysRow { display: flex; gap: 8px; padding: 8px 14px 0; background: var(--panel); }
-  #sysRow input { flex: 1; max-width: 900px; margin: 0 auto; width: 100%; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: #1e222c; color: var(--txt); padding: 7px 10px; }
-  .hint { font-size: 11px; color: var(--dim); padding: 6px 14px 0; background: var(--panel); text-align: center; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0b0e14; --panel: #12161f; --panel2: #1a2030; --line: #262e42;
+    --txt: #eef1f7; --dim: #8b94a9; --acc: #4f7cff; --acc2: #3b63d8;
+    --green: #34d399; --red: #f87171; --amber: #fbbf24;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, #162032 0%, var(--bg) 55%) fixed, var(--bg);
+    color: var(--txt); margin: 0; display: flex; flex-direction: column; height: 100dvh;
+  }
+  header {
+    background: rgba(18,22,31,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line); padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; z-index: 5;
+  }
+  .logo { width: 34px; height: 34px; border-radius: 10px; flex: none;
+    background: linear-gradient(135deg, var(--acc), #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 17px; color: #fff; }
+  .titleblock { flex: 1; min-width: 0; }
+  .titleblock h1 { font-size: 15px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+  .titleblock .sub { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill { font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--dim); white-space: nowrap; }
+  .pill.ok { color: var(--green); border-color: #1f4d3a; background: rgba(52,211,153,.08); }
+  .pill.bad { color: var(--red); border-color: #5b2626; background: rgba(248,113,113,.08); }
+  .pill.work { color: var(--amber); border-color: #5b4a1f; background: rgba(251,191,36,.08); }
+  .iconbtn { background: var(--panel2); border: 1px solid var(--line); color: var(--txt);
+    border-radius: 10px; width: 38px; height: 38px; font-size: 17px; cursor: pointer; flex: none; }
+  .iconbtn:active { transform: scale(.96); }
+
+  #settings { display: none; background: var(--panel); border-bottom: 1px solid var(--line); padding: 12px 14px; }
+  #settings.open { display: block; }
+  #settings label { font-size: 11px; color: var(--dim); display: block; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: .6px; }
+  #settings label:first-child { margin-top: 0; }
+  #settings input { width: 100%; font-size: 13px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--txt); padding: 10px 12px; }
+  .srow { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { font-size: 13px; font-weight: 700; border-radius: 10px; border: none; background: var(--acc);
+    color: #fff; padding: 10px 16px; cursor: pointer; flex: 1; }
+  .btn:active { background: var(--acc2); transform: scale(.98); }
+  .btn.ghost { background: var(--panel2); border: 1px solid var(--line); }
+
+  #modelbar { display: flex; gap: 8px; padding: 10px 14px 0; align-items: center; }
+  #modelSel { flex: 1; font-size: 13px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--txt); padding: 10px 12px; min-width: 0; }
+
+  #chat { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px;
+    max-width: 860px; width: 100%; margin: 0 auto; }
+  .empty { text-align: center; color: var(--dim); margin: auto 0; padding: 30px 10px; }
+  .empty .big { font-size: 40px; margin-bottom: 10px; }
+  .empty p { font-size: 13px; line-height: 1.7; margin: 4px 0; }
+  .msg { max-width: 88%; padding: 11px 14px; border-radius: 16px; line-height: 1.6; font-size: 14px;
+    white-space: pre-wrap; word-wrap: break-word; animation: pop .18s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
+  .who { font-size: 10px; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+  .user { align-self: flex-end; background: linear-gradient(135deg, var(--acc), var(--acc2)); border-bottom-right-radius: 5px; }
+  .user .who { color: rgba(255,255,255,.75); }
+  .bot { align-self: flex-start; background: var(--panel2); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+  .err { align-self: flex-start; background: rgba(248,113,113,.08); border: 1px solid #5b2626; border-bottom-left-radius: 5px; }
+  .meta { display: flex; gap: 8px; align-items: center; font-size: 10.5px; color: var(--dim); margin-top: 8px; flex-wrap: wrap; }
+  .copybtn { background: none; border: 1px solid var(--line); color: var(--dim); border-radius: 7px;
+    font-size: 10.5px; padding: 3px 9px; cursor: pointer; }
+  .copybtn:active { color: var(--txt); }
+  .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); animation: blink 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: .2s; } .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  #composer { background: rgba(18,22,31,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--line);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+  #crow { display: flex; gap: 8px; max-width: 860px; margin: 0 auto; align-items: flex-end; }
+  #input { flex: 1; resize: none; min-height: 46px; max-height: 140px; font-size: 15px; border-radius: 14px;
+    border: 1px solid var(--line); background: var(--panel2); color: var(--txt); padding: 12px 14px; font-family: inherit; }
+  #input:focus { outline: none; border-color: var(--acc); }
+  #send { width: 50px; height: 50px; border-radius: 14px; border: none; flex: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--acc), #8b5cf6); color: #fff; font-size: 19px; font-weight: 700; }
+  #send:disabled { opacity: .45; }
+  #send:active { transform: scale(.94); }
 </style>
 </head>
 <body>
 <header>
-  <h1>Kilo AI Playground</h1>
-  <input id="baseUrl" placeholder="API base URL, e.g. https://xxx.loca.lt">
-  <input id="apiKey" placeholder="API key (any value works)">
-  <select id="modelSel"><option value="">loading models...</option></select>
-  <button id="reload" class="ghost" title="Reload model list">Reload</button>
-  <button id="clear" class="ghost" title="Clear chat">Clear</button>
-  <span id="status"></span>
+  <div class="logo">K</div>
+  <div class="titleblock">
+    <h1>Kilo AI Playground</h1>
+    <div class="sub" id="modelsub">connecting...</div>
+  </div>
+  <span class="pill work" id="statuspill">connecting</span>
+  <button class="iconbtn" id="gear" title="Settings">&#9881;</button>
 </header>
-<div id="sysRow"><input id="sysPrompt" placeholder="System prompt (optional), e.g. You are a helpful assistant."></div>
-<div class="hint">If the tunnel URL changes, paste the new one above and hit Reload. Any API key value works.</div>
-<div id="chat"></div>
-<div id="composer"><div id="composerWrap">
-  <textarea id="input" placeholder="Type a message, Enter to send (Shift+Enter for new line)..."></textarea>
-  <button id="send">Send</button>
+
+<div id="settings">
+  <label>API base URL</label>
+  <input id="baseUrl" placeholder="https://xxx.loca.lt">
+  <label>API key (any value works)</label>
+  <input id="apiKey" placeholder="API key">
+  <label>System prompt (optional)</label>
+  <input id="sysPrompt" placeholder="e.g. You are a helpful assistant.">
+  <div class="srow">
+    <button class="btn" id="save">Save &amp; reconnect</button>
+    <button class="btn ghost" id="clear">Clear chat</button>
+  </div>
+</div>
+
+<div id="modelbar">
+  <select id="modelSel"><option value="">loading models...</option></select>
+</div>
+
+<div id="chat">
+  <div class="empty" id="empty">
+    <div class="big">&#129302;</div>
+    <p><b>Pick a model above, then say hello.</b></p>
+    <p>If the tunnel URL changes, open &#9881; settings,<br>paste the new URL and hit Save &amp; reconnect.</p>
+  </div>
+</div>
+
+<div id="composer"><div id="crow">
+  <textarea id="input" rows="1" placeholder="Message Kilo AI..."></textarea>
+  <button id="send" title="Send">&#10148;</button>
 </div></div>
+
 <script>
 const $ = id => document.getElementById(id);
 const chat = $('chat'), input = $('input'), sendBtn = $('send');
-const baseUrlEl = $('baseUrl'), apiKeyEl = $('apiKey'), modelSel = $('modelSel');
-const sysEl = $('sysPrompt'), statusEl = $('status');
+const baseUrlEl = $('baseUrl'), apiKeyEl = $('apiKey'), sysEl = $('sysPrompt');
+const modelSel = $('modelSel'), pill = $('statuspill'), modelsub = $('modelsub');
 const history = [];
 
-const LS = { get: (k, d) => { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
-             set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
-
+const LS = {
+  get: (k, d) => { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+};
 baseUrlEl.value = LS.get('kilo_base', 'https://kilo-api-alhussainacademy.loca.lt');
-apiKeyEl.value = LS.get('kilo_key', 'playground');
-sysEl.value = LS.get('kilo_sys', '');
+apiKeyEl.value  = LS.get('kilo_key', 'playground');
+sysEl.value     = LS.get('kilo_sys', '');
 
-function base() { return baseUrlEl.value.replace(/\/+$/, ''); }
-function headers() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (apiKeyEl.value || 'x') }; }
+const base = () => baseUrlEl.value.replace(/\/+$/, '');
+/* bypass-tunnel-reminder: documented localtunnel bypass so browsers skip
+   the "Tunnel website ahead!" interstitial (which otherwise returns HTTP 511). */
+const headers = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ' + (apiKeyEl.value || 'x'),
+  'bypass-tunnel-reminder': '1'
+});
 
-function addMsg(cls, text, meta) {
+function setPill(state, text) {
+  pill.className = 'pill ' + state;
+  pill.textContent = text;
+}
+function hideEmpty() { const e = $('empty'); if (e) e.remove(); }
+
+function addMsg(cls, who, text) {
+  hideEmpty();
   const d = document.createElement('div');
   d.className = 'msg ' + cls;
-  d.textContent = text;
-  if (meta) { const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; d.appendChild(m); }
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
-  return d;
+  const w = document.createElement('div'); w.className = 'who'; w.textContent = who;
+  const b = document.createElement('div'); b.textContent = text;
+  d.appendChild(w); d.appendChild(b);
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+  return { box: d, body: b };
+}
+function addMeta(box, text, copyText) {
+  const m = document.createElement('div'); m.className = 'meta';
+  const s = document.createElement('span'); s.textContent = text; m.appendChild(s);
+  if (copyText) {
+    const c = document.createElement('button'); c.className = 'copybtn'; c.textContent = 'copy';
+    c.onclick = () => {
+      (navigator.clipboard ? navigator.clipboard.writeText(copyText) : Promise.reject())
+        .then(() => { c.textContent = 'copied'; setTimeout(() => c.textContent = 'copy', 1200); })
+        .catch(() => { c.textContent = 'failed'; setTimeout(() => c.textContent = 'copy', 1200); });
+    };
+    m.appendChild(c);
+  }
+  box.appendChild(m);
+}
+
+function explainError(status, detail) {
+  if (status === 511) return 'The tunnel is showing its "Tunnel website ahead!" security page instead of the API. This usually clears on retry; if it persists, the tunnel host may need to restart it.';
+  if (status === 502 || status === 503) return 'The tunnel is temporarily down or restarting (HTTP ' + status + '). Wait a few seconds and try again.';
+  if (status === 0) return 'Could not reach the API at all. Check the base URL in settings and your internet connection.';
+  return 'Request failed (HTTP ' + status + ').' + (detail ? ' ' + detail : '');
+}
+
+/* Try with the bypass header first (skips localtunnel's browser interstitial).
+   If the browser's CORS preflight rejects that custom header, retry without it. */
+async function apiFetch(url, opts) {
+  opts = opts || {};
+  try {
+    return await fetch(url, { ...opts, headers: headers() });
+  } catch (e) {
+    const plain = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (apiKeyEl.value || 'x') };
+    return await fetch(url, { ...opts, headers: plain });
+  }
 }
 
 async function loadModels() {
   modelSel.innerHTML = '<option value="">loading models...</option>';
-  statusEl.textContent = 'connecting...';
+  setPill('work', 'connecting'); modelsub.textContent = 'connecting...';
   try {
-    const r = await fetch(base() + '/v1/models', { headers: headers() });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r = await apiFetch(base() + '/v1/models');
+    if (r.status === 511) throw { status: 511 };
+    if (!r.ok) throw { status: r.status };
     const j = await r.json();
-    const models = (j.data || []).map(m => ({ id: m.id, label: m.display_name || m.id })).sort((a, b) => a.id.localeCompare(b.id));
+    const models = (j.data || []).map(m => m.id).sort();
+    if (!models.length) throw { status: -1, detail: 'The API returned an empty model list.' };
     modelSel.innerHTML = '';
-    if (!models.length) throw new Error('no models returned');
-    models.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.label; modelSel.appendChild(o); });
-    const saved = LS.get('kilo_model', '');
-    const pref = [saved, 'deepseek-v3', 'deepseek-3-2', 'gpt-5-3-codex'].filter(Boolean);
-    for (const p of pref) { const o = [...modelSel.options].find(x => x.value === p); if (o) { modelSel.value = p; break; } }
-    statusEl.textContent = 'connected: ' + models.length + ' models available';
-    LS.set('kilo_base', baseUrlEl.value); LS.set('kilo_key', apiKeyEl.value);
+    models.forEach(id => { const o = document.createElement('option'); o.value = id; o.textContent = id; modelSel.appendChild(o); });
+    const pref = [LS.get('kilo_model', ''), 'deepseek-v3', 'deepseek-3-2', 'gpt-5-3-codex'].filter(Boolean);
+    for (const p of pref) { if (models.includes(p)) { modelSel.value = p; break; } }
+    setPill('ok', 'online'); modelsub.textContent = models.length + ' models available';
+    LS.set('kilo_base', baseUrlEl.value); LS.set('kilo_key', apiKeyEl.value); LS.set('kilo_sys', sysEl.value);
   } catch (e) {
+    const st = (e && e.status) || 0;
     modelSel.innerHTML = '<option value="">failed to load</option>';
-    statusEl.textContent = 'connection failed: ' + e.message + ' (is the tunnel URL correct and online?)';
+    setPill('bad', 'offline'); modelsub.textContent = 'connection failed';
+    hideEmpty();
+    addMsg('err', 'connection', explainError(st, e.detail) + ' (Is the tunnel URL correct and online?)');
   }
 }
 
 async function send() {
   const text = input.value.trim();
   if (!text || sendBtn.disabled) return;
-  if (!modelSel.value) { addMsg('err', 'No model selected. Check the API URL and hit Reload.'); return; }
-  input.value = '';
-  addMsg('user', text);
+  if (!modelSel.value) { addMsg('err', 'error', 'No model loaded. Open settings, check the API URL, then Save & reconnect.'); return; }
+  input.value = ''; input.style.height = 'auto';
+  addMsg('user', 'you', text);
   const sys = sysEl.value.trim();
   const msgs = [];
   if (sys) msgs.push({ role: 'system', content: sys });
-  msgs.push(...history, { role: 'user', content: text });
+  history.push({ role: 'user', content: text });
+  msgs.push(...history);
   sendBtn.disabled = true;
-  const t = addMsg('bot', 'thinking...'); t.classList.add('typing');
+  const { box, body } = addMsg('bot', modelSel.value, '');
+  body.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
   const t0 = Date.now();
   try {
-    const r = await fetch(base() + '/v1/chat/completions', {
-      method: 'POST', headers: headers(),
+    const r = await apiFetch(base() + '/v1/chat/completions', {
+      method: 'POST',
       body: JSON.stringify({ model: modelSel.value, messages: msgs, temperature: 0.7, max_tokens: 2048 })
     });
+    if (r.status === 511) throw { status: 511 };
     const j = await r.json().catch(() => ({}));
-    t.classList.remove('typing');
-    if (!r.ok) { t.className = 'msg err'; t.textContent = 'Error HTTP ' + r.status + ': ' + (j.error ? JSON.stringify(j.error).slice(0, 300) : r.statusText); }
-    else {
-      const reply = (((j.choices || [])[0] || {}).message || {}).content || '(empty reply)';
-      const secs = ((Date.now() - t0) / 1000).toFixed(1);
-      const toks = j.usage && j.usage.total_tokens ? ' | ' + j.usage.total_tokens + ' tokens' : '';
-      t.textContent = reply;
-      const m = document.createElement('div'); m.className = 'meta';
-      m.textContent = (j.model || modelSel.value) + ' | ' + secs + 's' + toks;
-      t.appendChild(m);
-      history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
-    }
-  } catch (e) { t.classList.remove('typing'); t.className = 'msg err'; t.textContent = 'Request failed: ' + e.message; }
+    if (!r.ok) throw { status: r.status, detail: j.error ? JSON.stringify(j.error).slice(0, 200) : '' };
+    const reply = (((j.choices || [])[0] || {}).message || {}).content || '(empty reply)';
+    body.textContent = reply;
+    const secs = ((Date.now() - t0) / 1000).toFixed(1);
+    const toks = j.usage && j.usage.total_tokens ? ' | ' + j.usage.total_tokens + ' tokens' : '';
+    addMeta(box, secs + 's' + toks, reply);
+    history.push({ role: 'assistant', content: reply });
+    if (pill.className.includes('bad')) { setPill('ok', 'online'); }
+  } catch (e) {
+    const st = (e && e.status) || 0;
+    box.className = 'msg err';
+    body.textContent = explainError(st, e.detail);
+    const w = box.querySelector('.who'); if (w) w.textContent = 'error';
+    history.pop();
+  }
   sendBtn.disabled = false;
   chat.scrollTop = chat.scrollHeight;
 }
 
-sendBtn.onclick = send;
-$('reload').onclick = loadModels;
-$('clear').onclick = () => { chat.innerHTML = ''; history.length = 0; };
-modelSel.onchange = () => LS.set('kilo_model', modelSel.value);
-sysEl.onchange = () => LS.set('kilo_sys', sysEl.value);
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; });
 input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
-baseUrlEl.addEventListener('change', loadModels);
+sendBtn.onclick = send;
+$('gear').onclick = () => $('settings').classList.toggle('open');
+$('save').onclick = () => { $('settings').classList.remove('open'); chat.innerHTML = ''; history.length = 0;
+  const e = document.createElement('div'); e.className = 'empty'; e.id = 'empty';
+  e.innerHTML = '<div class="big">&#129302;</div><p><b>Reconnecting...</b></p>'; chat.appendChild(e); loadModels(); };
+$('clear').onclick = () => { chat.innerHTML = ''; history.length = 0; location.reload(); };
+modelSel.onchange = () => LS.set('kilo_model', modelSel.value);
 loadModels();
 </script>
 </body>
